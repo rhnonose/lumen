@@ -1,14 +1,11 @@
-use core::array::TryFromSliceError;
 use core::convert::TryFrom;
-use core::num::TryFromIntError;
 
 use thiserror::Error;
 
-use crate::erts::string::InvalidEncodingNameError;
-use crate::erts::term::index::IndexError;
 use crate::erts::term::prelude::*;
 
 use super::location::Location;
+use super::stacktrace::Stacktrace;
 use super::{Exception, SystemException, UnexpectedExceptionError};
 
 #[derive(Error, Debug, Clone)]
@@ -63,10 +60,10 @@ impl RuntimeException {
         }
     }
 
-    pub fn stacktrace(&self) -> Option<Term> {
+    pub fn stacktrace(&self) -> Option<Stacktrace> {
         match self {
-            RuntimeException::Throw(e) => e.stacktrace(),
-            RuntimeException::Exit(e) => e.stacktrace(),
+            RuntimeException::Throw(e) => e.stacktrace().map(|term| Stacktrace::Term(term)),
+            RuntimeException::Exit(e) => e.stacktrace().map(|term| Stacktrace::Term(term)),
             RuntimeException::Error(e) => e.stacktrace(),
             RuntimeException::Unknown(_err) => None,
         }
@@ -79,59 +76,6 @@ impl From<core::convert::Infallible> for RuntimeException {
     }
 }
 
-impl From<AtomError> for RuntimeException {
-    fn from(_: AtomError) -> Self {
-        super::badarg(location!())
-    }
-}
-
-impl From<BoolError> for RuntimeException {
-    fn from(_: BoolError) -> Self {
-        super::badarg(location!())
-    }
-}
-
-impl From<InvalidEncodingNameError> for RuntimeException {
-    fn from(_: InvalidEncodingNameError) -> Self {
-        super::badarg(location!())
-    }
-}
-
-impl From<ImproperList> for RuntimeException {
-    fn from(_: ImproperList) -> Self {
-        super::badarg(location!())
-    }
-}
-
-impl From<IndexError> for RuntimeException {
-    fn from(_: IndexError) -> Self {
-        super::badarg(location!())
-    }
-}
-
-impl From<TryFromIntError> for RuntimeException {
-    fn from(_: TryFromIntError) -> Self {
-        super::badarg(location!())
-    }
-}
-
-impl From<TryIntoIntegerError> for RuntimeException {
-    fn from(_: TryIntoIntegerError) -> Self {
-        super::badarg(location!())
-    }
-}
-
-impl From<TryFromSliceError> for RuntimeException {
-    fn from(_: TryFromSliceError) -> Self {
-        super::badarg(location!())
-    }
-}
-
-impl From<TypeError> for RuntimeException {
-    fn from(_: TypeError) -> Self {
-        super::badarg(location!())
-    }
-}
 impl TryFrom<Exception> for RuntimeException {
     type Error = UnexpectedExceptionError<RuntimeException, SystemException>;
 

@@ -18,8 +18,8 @@ use lumen_runtime_macros::native_implemented_function;
 /// `delete_element/2`
 #[native_implemented_function(delete_element/2)]
 pub fn native(process: &Process, index: Term, tuple: Term) -> exception::Result<Term> {
-    let initial_inner_tuple: Boxed<Tuple> = tuple.try_into()?;
-    let index_zero_based: OneBasedIndex = index.try_into()?;
+    let initial_inner_tuple: Boxed<Tuple> = tuple.try_into().map_err(|_| badarg!(process))?;
+    let index_zero_based: OneBasedIndex = index.try_into().map_err(|_| badarg!(process))?;
     let initial_len = initial_inner_tuple.len();
 
     if index_zero_based < initial_len {
@@ -39,6 +39,6 @@ pub fn native(process: &Process, index: Term, tuple: Term) -> exception::Result<
 
         Ok(smaller_tuple)
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }

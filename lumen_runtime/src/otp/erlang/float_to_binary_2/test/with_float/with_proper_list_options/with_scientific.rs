@@ -165,7 +165,7 @@ fn always_includes_e() {
                     prop_assert!(result.is_ok());
 
                     let binary = result.unwrap();
-                    let string: String = binary_to_string(binary).unwrap();
+                    let string: String = binary_to_string(&arc_process, binary).unwrap();
 
                     prop_assert!(string.contains('e'));
 
@@ -197,7 +197,7 @@ fn always_includes_sign_of_exponent() {
                     prop_assert!(result.is_ok());
 
                     let binary = result.unwrap();
-                    let string: String = binary_to_string(binary).unwrap();
+                    let string: String = binary_to_string(&arc_process, binary).unwrap();
                     let part_vec: Vec<&str> = string.splitn(2, 'e').collect();
 
                     prop_assert_eq!(part_vec.len(), 2);
@@ -234,7 +234,7 @@ fn exponent_is_at_least_2_digits() {
                     prop_assert!(result.is_ok());
 
                     let binary = result.unwrap();
-                    let string: String = binary_to_string(binary).unwrap();
+                    let string: String = binary_to_string(&arc_process, binary).unwrap();
                     let part_vec: Vec<&str> = string.splitn(2, 'e').collect();
 
                     prop_assert_eq!(part_vec.len(), 2);

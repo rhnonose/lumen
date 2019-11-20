@@ -7,22 +7,30 @@ mod test;
 
 use core::convert::TryInto;
 
-use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
 use liblumen_alloc::erts::term::prelude::*;
+use liblumen_alloc::{badarg, Process};
 
 use lumen_runtime_macros::native_implemented_function;
 
 #[native_implemented_function(keymember/3)]
-pub fn native(key: Term, index: Term, tuple_list: Term) -> exception::Result<Term> {
-    let index: OneBasedIndex = index.try_into()?;
+pub fn native(
+    process: &Process,
+    key: Term,
+    index: Term,
+    tuple_list: Term,
+) -> exception::Result<Term> {
+    let index: OneBasedIndex = index.try_into().map_err(|_| badarg!(process))?;
 
     match tuple_list.decode()? {
         TypedTerm::Nil => Ok(false.into()),
-        TypedTerm::List(cons) => match cons.keyfind(index, key)? {
-            Some(_) => Ok(true.into()),
-            None => Ok(false.into()),
+        TypedTerm::List(cons) => match cons.keyfind(index, key) {
+            Ok(option_element) => match option_element {
+                Some(_) => Ok(true.into()),
+                None => Ok(false.into()),
+            },
+            Err(_) => Err(badarg!(process).into()),
         },
-        _ => Err(badarg!().into()),
+        _ => Err(badarg!(process).into()),
     }
 }

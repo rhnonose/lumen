@@ -12,14 +12,15 @@ use web_sys::{Document, Element, HtmlBodyElement, HtmlElement, HtmlTableElement,
 
 use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
+use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::*;
 
 fn module() -> Atom {
     Atom::try_from_str("Elixir.Lumen.Web.Node").unwrap()
 }
 
-fn node_from_term(term: Term) -> Result<&'static Node, exception::Exception> {
-    let boxed: Boxed<Resource> = term.try_into()?;
+fn node_from_term(process: &Process, term: Term) -> Result<&'static Node, exception::Exception> {
+    let boxed: Boxed<Resource> = term.try_into().map_err(|_| badarg!(process))?;
     let resource_reference: Resource = boxed.into();
 
     if resource_reference.is::<Document>() {
@@ -63,6 +64,6 @@ fn node_from_term(term: Term) -> Result<&'static Node, exception::Exception> {
 
         Ok(node)
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }

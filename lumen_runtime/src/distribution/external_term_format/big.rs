@@ -14,7 +14,7 @@ fn decode<'a>(
     bytes: &'a [u8],
     len: usize,
 ) -> Result<(Term, &'a [u8]), Exception> {
-    let (sign, after_sign_bytes) = sign::decode(bytes)?;
+    let (sign, after_sign_bytes) = sign::decode(process, bytes)?;
 
     if len <= after_sign_bytes.len() {
         let (digits_bytes, after_digits_bytes) = after_sign_bytes.split_at(len);
@@ -23,6 +23,6 @@ fn decode<'a>(
 
         Ok((integer, after_digits_bytes))
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }

@@ -8,7 +8,7 @@ use liblumen_alloc::erts::Process;
 use super::u16;
 
 pub fn decode<'a>(process: &Process, bytes: &'a [u8]) -> Result<(Term, &'a [u8]), Exception> {
-    let (len_u16, after_len_bytes) = u16::decode(bytes)?;
+    let (len_u16, after_len_bytes) = u16::decode(process, bytes)?;
     let len_usize = len_u16 as usize;
 
     if len_usize <= after_len_bytes.len() {
@@ -20,9 +20,9 @@ pub fn decode<'a>(process: &Process, bytes: &'a [u8]) -> Result<(Term, &'a [u8])
 
                 Ok((charlist, after_characters_bytes))
             }
-            Err(_) => Err(badarg!().into()),
+            Err(_) => Err(badarg!(process).into()),
         }
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }

@@ -17,8 +17,8 @@ use lumen_runtime_macros::native_implemented_function;
 
 #[native_implemented_function(process_info/2)]
 pub fn native(process: &Process, pid: Term, item: Term) -> exception::Result<Term> {
-    let pid_pid: Pid = pid.try_into()?;
-    let item_atom: Atom = item.try_into()?;
+    let pid_pid: Pid = pid.try_into().map_err(|_| badarg!(process))?;
+    let item_atom: Atom = item.try_into().map_err(|_| badarg!(process))?;
 
     if process.pid() == pid_pid {
         process_info(process, item_atom)
@@ -67,7 +67,7 @@ fn process_info(process: &Process, item: Atom) -> exception::Result<Term> {
         "total_heap_size" => unimplemented!(),
         "trace" => unimplemented!(),
         "trap_exit" => unimplemented!(),
-        _ => Err(badarg!().into()),
+        _ => Err(badarg!(process).into()),
     }
 }
 

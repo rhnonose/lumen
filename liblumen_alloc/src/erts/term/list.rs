@@ -10,7 +10,7 @@ use anyhow::*;
 use thiserror::Error;
 
 use crate::borrow::CloneToProcess;
-use crate::erts::exception::{self, AllocResult, Exception};
+use crate::erts::exception::AllocResult;
 use crate::erts::process::alloc::{StackAlloc, TermAlloc};
 use crate::erts::term::prelude::*;
 use crate::erts::to_word_size;
@@ -159,7 +159,11 @@ impl Cons {
     /// at the given index.
     ///
     /// If no key is found, returns 'badarg'
-    pub fn keyfind(&self, index: OneBasedIndex, key: Term) -> exception::Result<Option<Term>> {
+    pub fn keyfind(
+        &self,
+        index: OneBasedIndex,
+        key: Term,
+    ) -> Result<Option<Term>, ImproperListError> {
         for result in self.into_iter() {
             if let Ok(item) = result {
                 let tuple_item: Result<Boxed<Tuple>, _> = item.try_into();
@@ -171,7 +175,7 @@ impl Cons {
                     }
                 }
             } else {
-                return Err(badarg!().into());
+                return Err(ImproperListError);
             }
         }
 
@@ -374,19 +378,20 @@ impl TryFrom<TypedTerm> for Boxed<Cons> {
 }
 
 impl TryInto<String> for Boxed<Cons> {
-    type Error = Exception;
+    type Error = anyhow::Error;
 
     fn try_into(self) -> Result<String, Self::Error> {
         self.as_ref()
             .into_iter()
             .map(|result| match result {
                 Ok(element) => {
-                    let result_char: exception::Result<char> =
-                        element.try_into().map_err(|_| badarg!().into());
+                    let result_char: Result<char, _> = element
+                        .try_into()
+                        .context("string (Erlang) or charlist (elixir) element not a char");
 
                     result_char
                 }
-                Err(_) => Err(badarg!().into()),
+                Err(_) => Err(ImproperListError.into()),
             })
             .collect()
     }

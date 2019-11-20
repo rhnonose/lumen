@@ -15,8 +15,8 @@ pub(in crate::otp::erlang) fn native(
     function: Term,
     arguments: Term,
 ) -> exception::Result<Term> {
-    let module_atom: Atom = module.try_into()?;
-    let function_atom: Atom = function.try_into()?;
+    let module_atom: Atom = module.try_into().map_err(|_| badarg!(process))?;
+    let function_atom: Atom = function.try_into().map_err(|_| badarg!(process))?;
 
     let args = arguments.decode()?;
     if args.is_proper_list() {
@@ -24,6 +24,6 @@ pub(in crate::otp::erlang) fn native(
             .and_then(|spawned| spawned.to_term(process))
             .map_err(|e| e.into())
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }

@@ -29,13 +29,15 @@ pub use self::runtime::RuntimeException;
 mod system;
 pub use self::system::SystemException;
 
+mod stacktrace;
+pub use self::stacktrace::Stacktrace;
+
 use core::any::type_name;
 use core::convert::Into;
 use core::marker::PhantomData;
 
 use thiserror::Error;
 
-use super::string::InvalidEncodingNameError;
 use super::term::prelude::*;
 
 /// A convenience type alias for results which fail with `Exception`
@@ -76,73 +78,9 @@ impl From<TermEncodingError> for Exception {
         Self::System(err.into())
     }
 }
-
-// Runtime exception type conversions
-impl From<AtomError> for Exception {
-    fn from(atom_error: AtomError) -> Self {
-        Self::Runtime(atom_error.into())
-    }
-}
-impl From<BoolError> for Exception {
-    fn from(bool_error: BoolError) -> Self {
-        Self::Runtime(bool_error.into())
-    }
-}
-impl From<BytesFromBinaryError> for Exception {
-    fn from(err: BytesFromBinaryError) -> Self {
-        use BytesFromBinaryError::*;
-
-        match err {
-            NotABinary | Type => Self::Runtime(badarg(location!())),
-            Alloc(e) => Self::System(e.into()),
-        }
-    }
-}
-impl From<InvalidEncodingNameError> for Exception {
-    fn from(encoding_error: InvalidEncodingNameError) -> Self {
-        Self::Runtime(encoding_error.into())
-    }
-}
-impl From<ImproperList> for Exception {
-    fn from(improper_list: ImproperList) -> Self {
-        Self::Runtime(improper_list.into())
-    }
-}
-impl From<IndexError> for Exception {
-    fn from(index_error: IndexError) -> Self {
-        Self::Runtime(index_error.into())
-    }
-}
 impl From<InvalidPidError> for Exception {
-    fn from(_err: InvalidPidError) -> Self {
-        Self::Runtime(badarg(location!()))
-    }
-}
-
-impl From<StrFromBinaryError> for Exception {
-    fn from(err: StrFromBinaryError) -> Self {
-        use StrFromBinaryError::*;
-
-        match err {
-            NotABinary | Type | Utf8Error(_) => Self::Runtime(badarg(location!())),
-            Alloc(e) => Self::System(e.into()),
-        }
-    }
-}
-impl From<core::num::TryFromIntError> for Exception {
-    fn from(try_from_int_error: core::num::TryFromIntError) -> Self {
-        Self::Runtime(try_from_int_error.into())
-    }
-}
-impl From<TryIntoIntegerError> for Exception {
-    fn from(try_into_integer_error: TryIntoIntegerError) -> Self {
-        Self::Runtime(try_into_integer_error.into())
-    }
-}
-
-impl From<TypeError> for Exception {
-    fn from(type_error: TypeError) -> Self {
-        Self::Runtime(type_error.into())
+    fn from(err: InvalidPidError) -> Self {
+        RuntimeException::from(ArcError::from_err(err)).into()
     }
 }
 

@@ -17,8 +17,8 @@ use lumen_runtime_macros::native_implemented_function;
 
 #[native_implemented_function(setelement/3)]
 pub fn native(process: &Process, index: Term, tuple: Term, value: Term) -> exception::Result<Term> {
-    let initial_inner_tuple: Boxed<Tuple> = tuple.try_into()?;
-    let index_zero_based: OneBasedIndex = index.try_into()?;
+    let initial_inner_tuple: Boxed<Tuple> = tuple.try_into().map_err(|_| badarg!(process))?;
+    let index_zero_based: OneBasedIndex = index.try_into().map_err(|_| badarg!(process))?;
 
     let length = initial_inner_tuple.len();
 
@@ -40,6 +40,6 @@ pub fn native(process: &Process, index: Term, tuple: Term, value: Term) -> excep
         }
         .map_err(|error| error.into())
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }

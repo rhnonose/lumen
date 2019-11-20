@@ -19,7 +19,7 @@ use crate::registry;
 
 #[native_implemented_function(register/2)]
 pub fn native(arc_process: Arc<Process>, name: Term, pid_or_port: Term) -> exception::Result<Term> {
-    let atom: Atom = name.try_into()?;
+    let atom: Atom = name.try_into().map_err(|_| badarg!(&arc_process))?;
 
     let option_registered: Option<Term> = match atom.name() {
         "undefined" => None,
@@ -39,6 +39,6 @@ pub fn native(arc_process: Arc<Process>, name: Term, pid_or_port: Term) -> excep
 
     match option_registered {
         Some(registered) => Ok(registered),
-        None => Err(badarg!().into()),
+        None => Err(badarg!(&arc_process).into()),
     }
 }

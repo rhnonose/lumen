@@ -22,8 +22,8 @@ use crate::html_form_element;
 
 #[native_implemented_function(element/2)]
 fn native(process: &Process, html_form_element_term: Term, name: Term) -> exception::Result<Term> {
-    let html_form_element_term = html_form_element::from_term(html_form_element_term)?;
-    let name_string: String = binary_to_string(name)?;
+    let html_form_element_term = html_form_element::from_term(process, html_form_element_term)?;
+    let name_string: String = binary_to_string(process, name)?;
 
     let object = html_form_element_term.get_with_name(&name_string).unwrap();
     let result_html_input_element: Result<HtmlInputElement, _> = object.dyn_into();

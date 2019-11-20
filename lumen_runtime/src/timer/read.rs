@@ -1,7 +1,5 @@
 use std::convert::{TryFrom, TryInto};
 
-use liblumen_alloc::badarg;
-use liblumen_alloc::erts::exception::{self, Exception};
 use liblumen_alloc::erts::term::prelude::*;
 
 pub struct Options {
@@ -9,22 +7,28 @@ pub struct Options {
 }
 
 impl Options {
-    fn put_option_term(&mut self, option: Term) -> exception::Result<&Options> {
-        let tuple: Boxed<Tuple> = option.try_into()?;
+    fn put_option_term(&mut self, option: Term) -> Result<&Options, TryFromTermError> {
+        let tuple: Boxed<Tuple> = option
+            .try_into()
+            .map_err(|_| TryFromTermError::ElementType)?;
 
         if tuple.len() == 2 {
-            let atom: Atom = tuple[0].try_into()?;
+            let atom: Atom = tuple[0]
+                .try_into()
+                .map_err(|_| TryFromTermError::KeywordKeyType)?;
 
             match atom.name() {
                 "async" => {
-                    self.r#async = tuple[1].try_into()?;
+                    self.r#async = tuple[1]
+                        .try_into()
+                        .map_err(|_| TryFromTermError::AsyncType)?;
 
                     Ok(self)
                 }
-                _ => Err(badarg!().into()),
+                name => Err(TryFromTermError::KeywordKey(name).into()),
             }
         } else {
-            Err(badarg!().into())
+            Err(TryFromTermError::TupleSize)
         }
     }
 }
@@ -36,14 +40,14 @@ impl Default for Options {
 }
 
 impl TryFrom<Term> for Options {
-    type Error = Exception;
+    type Error = TryFromTermError;
 
-    fn try_from(term: Term) -> Result<Options, Self::Error> {
+    fn try_from(term: Term) -> Result<Self, Self::Error> {
         let mut options: Options = Default::default();
         let mut options_term = term;
 
         loop {
-            match options_term.decode()? {
+            match options_term.decode().unwrap() {
                 TypedTerm::Nil => return Ok(options),
                 TypedTerm::List(cons) => {
                     options.put_option_term(cons.head)?;
@@ -51,8 +55,17 @@ impl TryFrom<Term> for Options {
 
                     continue;
                 }
-                _ => return Err(badarg!().into()),
+                _ => return Err(TryFromTermError::Type),
             }
         }
     }
+}
+
+pub enum TryFromTermError {
+    AsyncType,
+    ElementType,
+    KeywordKeyType,
+    KeywordKey(&'static str),
+    TupleSize,
+    Type,
 }

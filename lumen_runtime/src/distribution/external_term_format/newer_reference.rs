@@ -14,18 +14,18 @@ pub fn decode<'a>(
     safe: bool,
     bytes: &'a [u8],
 ) -> Result<(Term, &'a [u8]), Exception> {
-    let (u32_len_u16, after_len_bytes) = u16::decode(bytes)?;
+    let (u32_len_u16, after_len_bytes) = u16::decode(process, bytes)?;
     let len_usize = (u32_len_u16 as usize) * mem::size_of::<u32>();
 
-    let (arc_node, after_node_bytes) = arc_node::decode(safe, after_len_bytes)?;
+    let (arc_node, after_node_bytes) = arc_node::decode(process, safe, after_len_bytes)?;
     // TODO use creation to differentiate respawned nodes
-    let (_creation, after_creation_bytes) = u32::decode(after_node_bytes)?;
+    let (_creation, after_creation_bytes) = u32::decode(process, after_node_bytes)?;
 
     if len_usize <= after_creation_bytes.len() {
         if arc_node == node::arc_node() {
             let (id_bytes, after_id_bytes) = after_creation_bytes.split_at(len_usize);
-            let (scheduler_id_u32, after_scheduler_id_bytes) = u32::decode(id_bytes)?;
-            let (number_u64, _) = u64::decode(after_scheduler_id_bytes)?;
+            let (scheduler_id_u32, after_scheduler_id_bytes) = u32::decode(process, id_bytes)?;
+            let (number_u64, _) = u64::decode(process, after_scheduler_id_bytes)?;
 
             let reference =
                 process.reference_from_scheduler(scheduler_id_u32.into(), number_u64)?;
@@ -35,6 +35,6 @@ pub fn decode<'a>(
             unimplemented!()
         }
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }

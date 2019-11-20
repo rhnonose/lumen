@@ -78,13 +78,13 @@ pub enum Tag {
 }
 
 impl Tag {
-    pub fn decode(bytes: &[u8]) -> Result<(Self, &[u8]), Exception> {
-        let (tag_u8, after_tag_bytes) = u8::decode(bytes)?;
+    pub fn decode<'a>(process: &Process, bytes: &'a [u8]) -> Result<(Self, &'a [u8]), Exception> {
+        let (tag_u8, after_tag_bytes) = u8::decode(process, bytes)?;
         let result_tag: Result<Tag, _> = tag_u8.try_into();
 
         match result_tag {
             Ok(tag) => Ok((tag, after_tag_bytes)),
-            Err(_) => Err(badarg!().into()),
+            Err(_) => Err(badarg!(process).into()),
         }
     }
 }
@@ -95,17 +95,21 @@ pub enum Pid {
 }
 
 impl Pid {
-    fn decode(safe: bool, bytes: &[u8]) -> Result<(Self, &[u8]), Exception> {
-        let (tag, after_tag_bytes) = Tag::decode(bytes)?;
+    fn decode<'a>(
+        process: &Process,
+        safe: bool,
+        bytes: &'a [u8],
+    ) -> Result<(Self, &'a [u8]), Exception> {
+        let (tag, after_tag_bytes) = Tag::decode(process, bytes)?;
 
         match tag {
-            Tag::PID => pid::decode_pid(safe, after_tag_bytes),
-            Tag::NewPID => new_pid::decode_pid(safe, after_tag_bytes),
-            _ => Err(badarg!().into()),
+            Tag::PID => pid::decode_pid(process, safe, after_tag_bytes),
+            Tag::NewPID => new_pid::decode_pid(process, safe, after_tag_bytes),
+            _ => Err(badarg!(process).into()),
         }
     }
 
-    fn new(arc_node: Arc<Node>, id: u32, serial: u32) -> Result<Self, Exception> {
+    fn new(arc_node: Arc<Node>, id: u32, serial: u32) -> Result<Self, InvalidPidError> {
         let pid = if arc_node == node::arc_node() {
             let local_pid = LocalPid::new(id as usize, serial as usize)?;
 

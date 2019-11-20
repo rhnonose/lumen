@@ -17,7 +17,7 @@ use lumen_runtime_macros::native_implemented_function;
 
 #[native_implemented_function(split_binary/2)]
 pub fn native(process: &Process, binary: Term, position: Term) -> exception::Result<Term> {
-    let index: usize = position.try_into()?;
+    let index: usize = position.try_into().map_err(|_| badarg!(process))?;
 
     match binary.decode().unwrap() {
         binary_box @ TypedTerm::HeapBinary(_) | binary_box @ TypedTerm::ProcBin(_) => {
@@ -64,7 +64,7 @@ pub fn native(process: &Process, binary: Term, position: Term) -> exception::Res
                         .map_err(|e| e.into())
                         .and_then(|t| t.encode())
                 } else {
-                    Err(badarg!().into())
+                    Err(badarg!(process).into())
                 }
             }
         }
@@ -129,10 +129,10 @@ pub fn native(process: &Process, binary: Term, position: Term) -> exception::Res
                         .map_err(|e| e.into())
                         .and_then(|t| t.encode())
                 } else {
-                    Err(badarg!().into())
+                    Err(badarg!(process).into())
                 }
             }
         }
-        _ => Err(badarg!().into()),
+        _ => Err(badarg!(process).into()),
     }
 }

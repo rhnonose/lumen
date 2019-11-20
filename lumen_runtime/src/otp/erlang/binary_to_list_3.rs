@@ -21,27 +21,28 @@ use crate::otp;
 /// consistently use zero-based indexing.
 #[native_implemented_function(binary_to_list/3)]
 pub fn native(process: &Process, binary: Term, start: Term, stop: Term) -> exception::Result<Term> {
-    let one_based_start_usize: usize = start.try_into()?;
+    let one_based_start_usize: usize = start.try_into().map_err(|_| badarg!(process))?;
 
     if 1 <= one_based_start_usize {
-        let one_based_stop_usize: usize = stop.try_into()?;
+        let one_based_stop_usize: usize = stop.try_into().map_err(|_| badarg!(process))?;
 
         if one_based_start_usize <= one_based_stop_usize {
             let zero_based_start_usize = one_based_start_usize - 1;
             let zero_based_stop_usize = one_based_stop_usize - 1;
 
             let length_usize = zero_based_stop_usize - zero_based_start_usize + 1;
+            let position = process
+                .integer(zero_based_start_usize)
+                .map_err(|_| badarg!(process))?;
+            let length = process
+                .integer(length_usize)
+                .map_err(|_| badarg!(process))?;
 
-            otp::binary::bin_to_list(
-                binary,
-                process.integer(zero_based_start_usize)?,
-                process.integer(length_usize)?,
-                process,
-            )
+            otp::binary::bin_to_list(binary, position, length, process)
         } else {
-            Err(badarg!().into())
+            Err(badarg!(process).into())
         }
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }

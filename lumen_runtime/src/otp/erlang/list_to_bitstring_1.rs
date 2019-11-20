@@ -26,7 +26,7 @@ pub fn native(process: &Process, iolist: Term) -> exception::Result<Term> {
             while let Some(top) = stack.pop() {
                 match top.decode().unwrap() {
                     TypedTerm::SmallInteger(small_integer) => {
-                        let top_byte = small_integer.try_into()?;
+                        let top_byte = small_integer.try_into().map_err(|_| badarg!(process))?;
 
                         if partial_byte_bit_count == 0 {
                             byte_vec.push(top_byte);
@@ -47,7 +47,7 @@ pub fn native(process: &Process, iolist: Term) -> exception::Result<Term> {
                         let tail = boxed_cons.tail;
 
                         if tail.is_smallint() {
-                            return Err(badarg!().into());
+                            return Err(badarg!(process).into());
                         } else {
                             stack.push(tail);
                         }
@@ -96,7 +96,7 @@ pub fn native(process: &Process, iolist: Term) -> exception::Result<Term> {
                             }
                         }
                     }
-                    _ => return Err(badarg!().into()),
+                    _ => return Err(badarg!(process).into()),
                 }
             }
 
@@ -112,6 +112,6 @@ pub fn native(process: &Process, iolist: Term) -> exception::Result<Term> {
                     .unwrap())
             }
         }
-        _ => Err(badarg!().into()),
+        _ => Err(badarg!(process).into()),
     }
 }

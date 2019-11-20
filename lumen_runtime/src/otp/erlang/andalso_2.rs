@@ -7,7 +7,9 @@ mod test;
 
 use std::convert::TryInto;
 
+use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
+use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::Term;
 
 use lumen_runtime_macros::native_implemented_function;
@@ -17,8 +19,8 @@ use lumen_runtime_macros::native_implemented_function;
 /// Short-circuiting, but doesn't enforce `right` is boolean.  If you need to enforce `boolean` for
 /// both operands, use `and_2`.
 #[native_implemented_function(andalso/2)]
-pub fn native(boolean: Term, term: Term) -> exception::Result<Term> {
-    let boolean_bool: bool = boolean.try_into()?;
+pub fn native(process: &Process, boolean: Term, term: Term) -> exception::Result<Term> {
+    let boolean_bool: bool = boolean.try_into().map_err(|_| badarg!(process))?;
 
     if boolean_bool {
         Ok(term)

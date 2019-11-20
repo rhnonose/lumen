@@ -6,7 +6,7 @@ use liblumen_alloc::erts::Process;
 use super::u32;
 
 pub fn decode<'a>(process: &Process, bytes: &'a [u8]) -> Result<(Term, &'a [u8]), Exception> {
-    let (len_u32, after_len_bytes) = u32::decode(bytes)?;
+    let (len_u32, after_len_bytes) = u32::decode(process, bytes)?;
     let len_usize = len_u32 as usize;
 
     if len_usize <= after_len_bytes.len() {
@@ -15,6 +15,6 @@ pub fn decode<'a>(process: &Process, bytes: &'a [u8]) -> Result<(Term, &'a [u8])
 
         Ok((binary_term, after_data_bytes))
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }

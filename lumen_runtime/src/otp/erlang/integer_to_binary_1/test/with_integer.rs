@@ -18,7 +18,7 @@ fn with_small_integer_returns_binary() {
 
                 prop_assert!(term.is_binary());
 
-                let string: String = binary_to_string(term).unwrap();
+                let string: String = binary_to_string(&arc_process, term).unwrap();
 
                 prop_assert_eq!(string, integer_isize.to_string());
 
@@ -43,7 +43,7 @@ fn with_big_integer_returns_binary() {
 
                 prop_assert!(term.is_binary());
 
-                let string: String = binary_to_string(term).unwrap();
+                let string: String = binary_to_string(&arc_process, term).unwrap();
 
                 prop_assert_eq!(string, integer_isize.to_string());
 

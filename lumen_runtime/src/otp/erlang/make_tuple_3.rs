@@ -23,7 +23,7 @@ pub fn native(
     init_list: Term,
 ) -> exception::Result<Term> {
     // arity by definition is only 0-225, so `u8`, but ...
-    let arity_u8: u8 = arity.try_into()?;
+    let arity_u8: u8 = arity.try_into().map_err(|_| badarg!(process))?;
     // ... everything else uses `usize`, so cast it back up
     let arity_usize: usize = arity_u8 as usize;
 
@@ -40,22 +40,27 @@ pub fn native(
             for result in boxed_cons.into_iter() {
                 match result {
                     Ok(init) => {
-                        let init_boxed_tuple: Boxed<Tuple> = init.try_into()?;
+                        let init_boxed_tuple: Boxed<Tuple> =
+                            init.try_into().map_err(|_| badarg!(process))?;
 
                         if init_boxed_tuple.len() == 2 {
-                            let index: OneBasedIndex = init_boxed_tuple[0].try_into()?;
+                            let index: OneBasedIndex = init_boxed_tuple[0]
+                                .try_into()
+                                .map_err(|_| badarg!(process))?;
                             let element = init_boxed_tuple[1];
-                            tuple.set_element(index, element)?;
+                            tuple
+                                .set_element(index, element)
+                                .map_err(|_| badarg!(process))?;
                         } else {
-                            return Err(badarg!().into());
+                            return Err(badarg!(process).into());
                         }
                     }
-                    Err(_) => return Err(badarg!().into()),
+                    Err(_) => return Err(badarg!(process).into()),
                 }
             }
 
             Ok(tuple.encode()?)
         }
-        _ => Err(badarg!().into()),
+        _ => Err(badarg!(process).into()),
     }
 }

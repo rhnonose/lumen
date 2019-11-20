@@ -7,6 +7,7 @@ mod test;
 
 use std::convert::TryInto;
 
+use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
 use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::*;
@@ -19,7 +20,7 @@ pub fn native(process: &Process, term: Term) -> exception::Result<Term> {
     if term == process.pid_term() {
         Ok((!process.is_exiting()).into())
     } else {
-        let pid: Pid = term.try_into()?;
+        let pid: Pid = term.try_into().map_err(|_| badarg!(process))?;
 
         match pid_to_process(&pid) {
             Some(arc_process) => Ok((!arc_process.is_exiting()).into()),

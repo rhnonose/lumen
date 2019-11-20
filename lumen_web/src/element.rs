@@ -7,6 +7,7 @@ use std::mem;
 
 use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
+use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::*;
 
 use wasm_bindgen::JsCast;
@@ -19,8 +20,8 @@ pub fn module() -> Atom {
 
 // Private
 
-fn from_term(term: Term) -> Result<&'static Element, exception::Exception> {
-    let boxed: Boxed<Resource> = term.try_into()?;
+fn from_term(process: &Process, term: Term) -> Result<&'static Element, exception::Exception> {
+    let boxed: Boxed<Resource> = term.try_into().map_err(|_| badarg!(process))?;
     let resource_reference: Resource = boxed.into();
 
     if resource_reference.is::<Element>() {
@@ -56,9 +57,9 @@ fn from_term(term: Term) -> Result<&'static Element, exception::Exception> {
 
                 Ok(static_element)
             }
-            None => Err(badarg!().into()),
+            None => Err(badarg!(process).into()),
         }
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }

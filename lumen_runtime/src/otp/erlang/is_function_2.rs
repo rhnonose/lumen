@@ -7,14 +7,16 @@ mod test;
 
 use std::convert::TryInto;
 
+use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
+use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::*;
 
 use lumen_runtime_macros::native_implemented_function;
 
 #[native_implemented_function(is_function/2)]
-fn native(term: Term, arity: Term) -> exception::Result<Term> {
-    let arity_arity: u8 = arity.try_into()?;
+fn native(process: &Process, term: Term, arity: Term) -> exception::Result<Term> {
+    let arity_arity: u8 = arity.try_into().map_err(|_| badarg!(process))?;
 
     Ok(term.decode()?.is_function_with_arity(arity_arity).into())
 }

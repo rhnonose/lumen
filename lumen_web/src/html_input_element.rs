@@ -7,12 +7,16 @@ use web_sys::HtmlInputElement;
 
 use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
+use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::*;
 
 // Private
 
-fn from_term(term: Term) -> Result<&'static HtmlInputElement, exception::Exception> {
-    let boxed: Boxed<Resource> = term.try_into()?;
+fn from_term(
+    process: &Process,
+    term: Term,
+) -> Result<&'static HtmlInputElement, exception::Exception> {
+    let boxed: Boxed<Resource> = term.try_into().map_err(|_| badarg!(process))?;
     let html_input_element_reference: Resource = boxed.into();
 
     match html_input_element_reference.downcast_ref() {
@@ -22,7 +26,7 @@ fn from_term(term: Term) -> Result<&'static HtmlInputElement, exception::Excepti
 
             Ok(static_html_input_element)
         }
-        None => Err(badarg!().into()),
+        None => Err(badarg!(process).into()),
     }
 }
 

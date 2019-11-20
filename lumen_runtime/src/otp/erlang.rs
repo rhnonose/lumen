@@ -237,11 +237,16 @@ fn cancel_timer(
 
             Ok(term)
         }
-        _ => Err(badarg!().into()),
+        _ => Err(badarg!(process).into()),
     }
 }
 
-fn is_record(term: Term, record_tag: Term, size: Option<Term>) -> exception::Result<Term> {
+fn is_record(
+    process: &Process,
+    term: Term,
+    record_tag: Term,
+    size: Option<Term>,
+) -> exception::Result<Term> {
     match term.decode()? {
         TypedTerm::Tuple(tuple) => {
             match record_tag.decode()? {
@@ -253,7 +258,8 @@ fn is_record(term: Term, record_tag: Term, size: Option<Term>) -> exception::Res
 
                         match size {
                             Some(size_term) => {
-                                let size_usize: usize = size_term.try_into()?;
+                                let size_usize: usize =
+                                    size_term.try_into().map_err(|_| badarg!(process))?;
 
                                 (element == record_tag) & (len == size_usize)
                             }
@@ -263,7 +269,7 @@ fn is_record(term: Term, record_tag: Term, size: Option<Term>) -> exception::Res
                         // even if the `record_tag` cannot be checked, the `size` is still type
                         // checked
                         if let Some(size_term) = size {
-                            let _: usize = size_term.try_into()?;
+                            let _: usize = size_term.try_into().map_err(|_| badarg!(process))?;
                         }
 
                         false
@@ -271,7 +277,7 @@ fn is_record(term: Term, record_tag: Term, size: Option<Term>) -> exception::Res
 
                     Ok(tagged.into())
                 }
-                _ => Err(badarg!().into()),
+                _ => Err(badarg!(process).into()),
             }
         }
         _ => Ok(false.into()),
@@ -304,7 +310,7 @@ fn read_timer(
 
             Ok(term)
         }
-        _ => Err(badarg!().into()),
+        _ => Err(badarg!(process).into()),
     }
 }
 
@@ -317,7 +323,8 @@ fn start_timer(
     arc_process: Arc<Process>,
 ) -> exception::Result<Term> {
     if time.is_integer() {
-        let reference_frame_milliseconds: Milliseconds = time.try_into()?;
+        let reference_frame_milliseconds: Milliseconds =
+            time.try_into().map_err(|_| badarg!(&arc_process))?;
 
         let absolute_milliseconds = match options.reference_frame {
             ReferenceFrame::Relative => {
@@ -351,9 +358,9 @@ fn start_timer(
                     None => make_ref_0::native(&arc_process),
                 }
             }
-            _ => Err(badarg!().into()),
+            _ => Err(badarg!(&arc_process).into()),
         }
     } else {
-        Err(badarg!().into())
+        Err(badarg!(&arc_process).into())
     }
 }

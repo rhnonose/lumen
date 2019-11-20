@@ -3,8 +3,9 @@ use std::mem;
 
 use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception::Exception;
+use liblumen_alloc::erts::process::Process;
 
-pub fn decode(bytes: &[u8]) -> Result<(f64, &[u8]), Exception> {
+pub fn decode<'a>(process: &Process, bytes: &'a [u8]) -> Result<(f64, &'a [u8]), Exception> {
     const F64_BYTE_LEN: usize = mem::size_of::<f64>();
 
     if F64_BYTE_LEN <= bytes.len() {
@@ -14,6 +15,6 @@ pub fn decode(bytes: &[u8]) -> Result<(f64, &[u8]), Exception> {
 
         Ok((f, after_f64_bytes))
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }

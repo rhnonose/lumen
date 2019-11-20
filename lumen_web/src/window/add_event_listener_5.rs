@@ -11,6 +11,7 @@ use web_sys::Window;
 
 use liblumen_alloc::erts::exception;
 use liblumen_alloc::erts::process::code::stack::frame::Placement;
+use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::*;
 use liblumen_alloc::{atom, badarg};
 
@@ -22,14 +23,22 @@ use lumen_runtime::process::spawn::options::Options;
 use crate::window::add_event_listener;
 
 #[native_implemented_function(add_event_listener/4)]
-fn native(window: Term, event: Term, module: Term, function: Term) -> exception::Result<Term> {
-    let boxed: Boxed<Resource> = window.try_into()?;
+fn native(
+    process: &Process,
+    window: Term,
+    event: Term,
+    module: Term,
+    function: Term,
+) -> exception::Result<Term> {
+    let boxed: Boxed<Resource> = window.try_into().map_err(|_| badarg!(process))?;
     let window_reference: Resource = boxed.into();
-    let window_window: &Window = window_reference.downcast_ref().ok_or_else(|| badarg!())?;
+    let window_window: &Window = window_reference
+        .downcast_ref()
+        .ok_or_else(|| badarg!(process))?;
 
-    let event_atom: Atom = event.try_into()?;
-    let _: Atom = module.try_into()?;
-    let _: Atom = function.try_into()?;
+    let event_atom: Atom = event.try_into().map_err(|_| badarg!(process))?;
+    let _: Atom = module.try_into().map_err(|_| badarg!(process))?;
+    let _: Atom = function.try_into().map_err(|_| badarg!(process))?;
 
     // TODO support passing in options to allow bigger heaps
     let options: Options = Default::default();

@@ -23,10 +23,10 @@ pub fn native(
     name: Term,
     value: Term,
 ) -> exception::Result<Term> {
-    let element = element::from_term(element_term)?;
+    let element = element::from_term(process, element_term)?;
 
-    let name_string: String = binary_to_string(name)?;
-    let value_string: String = binary_to_string(value)?;
+    let name_string: String = binary_to_string(process, name)?;
+    let value_string: String = binary_to_string(process, value)?;
 
     match element.set_attribute(&name_string, &value_string) {
         Ok(()) => Ok(atom!("ok")),

@@ -19,7 +19,7 @@ use crate::{error_tuple, ok_tuple};
 
 #[native_implemented_function(new/1)]
 pub fn native(process: &Process, url: Term) -> exception::Result<Term> {
-    let url_string = binary_to_string(url)?;
+    let url_string = binary_to_string(process, url)?;
 
     match WebSocket::new(&url_string) {
         Ok(web_socket) => ok_tuple(process, Box::new(web_socket)),

@@ -5,12 +5,12 @@ pub fn decode_tagged<'a>(
     safe: bool,
     bytes: &'a [u8],
 ) -> Result<(Term, &'a [u8]), Exception> {
-    let (tag, after_tag_bytes) = Tag::decode(bytes)?;
+    let (tag, after_tag_bytes) = Tag::decode(process, bytes)?;
 
     match tag {
-        Tag::Atom => atom::decode_term(safe, after_tag_bytes),
+        Tag::Atom => atom::decode_term(process, safe, after_tag_bytes),
         Tag::AtomCacheReference => unimplemented!("{:?}", tag),
-        Tag::AtomUTF8 => atom_utf8::decode_term(safe, after_tag_bytes),
+        Tag::AtomUTF8 => atom_utf8::decode_term(process, safe, after_tag_bytes),
         Tag::Binary => binary::decode(process, after_tag_bytes),
         Tag::BitBinary => bit_binary::decode(process, after_tag_bytes),
         Tag::Export => export::decode(process, safe, after_tag_bytes),
@@ -31,8 +31,8 @@ pub fn decode_tagged<'a>(
         Tag::PID => pid::decode_term(process, safe, after_tag_bytes),
         Tag::Port => unimplemented!("{:?}", tag),
         Tag::Reference => unimplemented!("{:?}", tag),
-        Tag::SmallAtom => small_atom::decode(safe, after_tag_bytes),
-        Tag::SmallAtomUTF8 => small_atom_utf8::decode_term(safe, after_tag_bytes),
+        Tag::SmallAtom => small_atom::decode(process, safe, after_tag_bytes),
+        Tag::SmallAtomUTF8 => small_atom_utf8::decode_term(process, safe, after_tag_bytes),
         Tag::SmallBig => big::small::decode(process, after_tag_bytes),
         Tag::SmallInteger => small_integer::decode(process, after_tag_bytes),
         Tag::SmallTuple => tuple::small::decode(process, safe, after_tag_bytes),

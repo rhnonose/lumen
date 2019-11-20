@@ -16,7 +16,7 @@ use crate::otp::erlang::string_to_integer::decimal_string_to_integer;
 
 #[native_implemented_function(binary_to_integer/1)]
 pub fn native(process: &Process, binary: Term) -> exception::Result<Term> {
-    let string: String = binary_to_string(binary)?;
+    let string: String = binary_to_string(process, binary)?;
 
     decimal_string_to_integer(process, &string)
 }

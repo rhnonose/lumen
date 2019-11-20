@@ -20,13 +20,13 @@ use crate::registry;
 
 #[native_implemented_function(monitor/2)]
 pub fn native(process: &Process, r#type: Term, item: Term) -> exception::Result<Term> {
-    let type_atom: Atom = r#type.try_into()?;
+    let type_atom: Atom = r#type.try_into().map_err(|_| badarg!(process))?;
 
     match type_atom.name() {
         "port" => unimplemented!(),
         "process" => monitor_process_identifier(process, item),
         "time_offset" => unimplemented!(),
-        _ => Err(badarg!().into()),
+        _ => Err(badarg!(process).into()),
     }
 }
 
@@ -41,7 +41,7 @@ fn monitor_process_identifier(
         TypedTerm::Pid(pid) => monitor_process_pid(process, process_identifier, pid),
         TypedTerm::ExternalPid(_) => unimplemented!(),
         TypedTerm::Tuple(tuple) => monitor_process_tuple(process, process_identifier, &tuple),
-        _ => Err(badarg!().into()),
+        _ => Err(badarg!(process).into()),
     }
 }
 
@@ -106,14 +106,15 @@ fn monitor_process_tuple(
 ) -> exception::Result<Term> {
     if tuple.len() == 2 {
         let registered_name = tuple[0];
-        let registered_name_atom: Atom = registered_name.try_into()?;
+        let registered_name_atom: Atom =
+            registered_name.try_into().map_err(|_| badarg!(process))?;
 
         let node = tuple[1];
 
         if node == node_0::native() {
             monitor_process_registered_name(process, registered_name, registered_name_atom)
         } else {
-            let _node_atom: Atom = node.try_into()?;
+            let _node_atom: Atom = node.try_into().map_err(|_| badarg!(process))?;
 
             unimplemented!(
                 "node ({:?}) is not the local node ({:?})",
@@ -122,7 +123,7 @@ fn monitor_process_tuple(
             );
         }
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }
 

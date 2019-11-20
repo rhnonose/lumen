@@ -11,7 +11,7 @@ pub fn decode<'a>(
     safe: bool,
     bytes: &'a [u8],
 ) -> Result<(Term, &'a [u8]), Exception> {
-    let (pair_len_u32, after_len_bytes) = u32::decode(bytes)?;
+    let (pair_len_u32, after_len_bytes) = u32::decode(process, bytes)?;
     let pair_len_usize = pair_len_u32 as usize;
     let mut hash_map: HashMap<Term, Term> = HashMap::with_capacity(pair_len_usize);
     let mut remaining_bytes = after_len_bytes;

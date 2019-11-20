@@ -9,7 +9,7 @@ pub fn decode<'a>(
     safe: bool,
     bytes: &'a [u8],
 ) -> Result<(Term, &'a [u8]), Exception> {
-    let (len_32, after_len_bytes) = u32::decode(bytes)?;
+    let (len_32, after_len_bytes) = u32::decode(process, bytes)?;
     let (element_vec, after_elements_bytes) =
         decode_vec_term(process, safe, after_len_bytes, len_32 as usize)?;
     let (tail, after_tail_bytes) = term::decode_tagged(process, safe, after_elements_bytes)?;

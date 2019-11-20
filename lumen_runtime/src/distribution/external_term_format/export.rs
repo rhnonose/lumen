@@ -11,9 +11,10 @@ pub fn decode<'a>(
     safe: bool,
     bytes: &'a [u8],
 ) -> Result<(Term, &'a [u8]), Exception> {
-    let (module, after_module_bytes) = atom::decode_tagged(safe, bytes)?;
-    let (function, after_function_bytes) = atom::decode_tagged(safe, after_module_bytes)?;
-    let (arity, after_arity_bytes) = small_integer::decode_tagged_u8(after_function_bytes)?;
+    let (module, after_module_bytes) = atom::decode_tagged(process, safe, bytes)?;
+    let (function, after_function_bytes) = atom::decode_tagged(process, safe, after_module_bytes)?;
+    let (arity, after_arity_bytes) =
+        small_integer::decode_tagged_u8(process, after_function_bytes)?;
 
     let option_code = code::export::get(&module, &function, arity);
 

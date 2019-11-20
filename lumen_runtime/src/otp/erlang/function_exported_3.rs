@@ -29,17 +29,24 @@ mod test;
 
 use std::convert::TryInto;
 
+use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
+use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::{Atom, Term};
 use liblumen_alloc::Arity;
 
 use lumen_runtime_macros::native_implemented_function;
 
 #[native_implemented_function(function_exported/3)]
-pub fn native(module: Term, function: Term, arity: Term) -> exception::Result<Term> {
-    let module_atom: Atom = module.try_into()?;
-    let function_atom: Atom = function.try_into()?;
-    let arity_arity: Arity = arity.try_into()?;
+pub fn native(
+    process: &Process,
+    module: Term,
+    function: Term,
+    arity: Term,
+) -> exception::Result<Term> {
+    let module_atom: Atom = module.try_into().map_err(|_| badarg!(process))?;
+    let function_atom: Atom = function.try_into().map_err(|_| badarg!(process))?;
+    let arity_arity: Arity = arity.try_into().map_err(|_| badarg!(process))?;
 
     let exported =
         crate::code::export::contains_key(&module_atom, &function_atom, arity_arity).into();

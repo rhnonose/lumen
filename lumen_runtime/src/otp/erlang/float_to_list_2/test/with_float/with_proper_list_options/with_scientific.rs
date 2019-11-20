@@ -171,7 +171,7 @@ fn always_includes_e() {
                 prop_assert!(result.is_ok());
 
                 let list = result.unwrap();
-                let string: String = charlist_to_string(list).unwrap();
+                let string: String = charlist_to_string(&arc_process, list).unwrap();
 
                 prop_assert!(string.contains('e'));
 
@@ -204,7 +204,7 @@ fn always_includes_sign_of_exponent() {
                 prop_assert!(result.is_ok());
 
                 let list = result.unwrap();
-                let string: String = charlist_to_string(list).unwrap();
+                let string: String = charlist_to_string(&arc_process, list).unwrap();
                 let part_vec: Vec<&str> = string.splitn(2, 'e').collect();
 
                 prop_assert_eq!(part_vec.len(), 2);
@@ -242,7 +242,7 @@ fn exponent_is_at_least_2_digits() {
                 prop_assert!(result.is_ok());
 
                 let list = result.unwrap();
-                let string: String = charlist_to_string(list).unwrap();
+                let string: String = charlist_to_string(&arc_process, list).unwrap();
                 let part_vec: Vec<&str> = string.splitn(2, 'e').collect();
 
                 prop_assert_eq!(part_vec.len(), 2);

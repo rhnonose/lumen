@@ -19,8 +19,8 @@ use lumen_runtime_macros::native_implemented_function;
 
 #[native_implemented_function(create_element/2)]
 pub fn native(process: &Process, document: Term, tag: Term) -> exception::Result<Term> {
-    let document_document = document_from_term(document)?;
-    let tag_string: String = binary_to_string(tag)?;
+    let document_document = document_from_term(process, document)?;
+    let tag_string: String = binary_to_string(process, tag)?;
 
     match document_document.create_element(&tag_string) {
         Ok(element) => ok_tuple(process, Box::new(element)),

@@ -22,8 +22,8 @@ pub fn native(
     tuple: Term,
     element: Term,
 ) -> exception::Result<Term> {
-    let initial_inner_tuple: Boxed<Tuple> = tuple.try_into()?;
-    let index_one_based: OneBasedIndex = index.try_into()?;
+    let initial_inner_tuple: Boxed<Tuple> = tuple.try_into().map_err(|_| badarg!(process))?;
+    let index_one_based: OneBasedIndex = index.try_into().map_err(|_| badarg!(process))?;
 
     let length = initial_inner_tuple.len();
 
@@ -40,8 +40,8 @@ pub fn native(
         } else {
             process.tuple_from_slices(&[&initial_inner_tuple[..], &[element]])
         }
-        .map_err(|error| error.into())
+        .map_err(|_| badarg!(process).into())
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }

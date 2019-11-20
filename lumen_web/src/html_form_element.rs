@@ -9,12 +9,16 @@ use web_sys::{EventTarget, HtmlFormElement};
 
 use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
+use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::*;
 
 // Private
 
-fn from_term(term: Term) -> Result<&'static HtmlFormElement, exception::Exception> {
-    let boxed: Boxed<Resource> = term.try_into()?;
+fn from_term(
+    process: &Process,
+    term: Term,
+) -> Result<&'static HtmlFormElement, exception::Exception> {
+    let boxed: Boxed<Resource> = term.try_into().map_err(|_| badarg!(process))?;
     let resource_reference: Resource = boxed.into();
 
     if resource_reference.is::<EventTarget>() {
@@ -27,10 +31,10 @@ fn from_term(term: Term) -> Result<&'static HtmlFormElement, exception::Exceptio
 
             Ok(static_html_form_element)
         } else {
-            Err(badarg!().into())
+            Err(badarg!(process).into())
         }
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }
 

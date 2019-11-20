@@ -7,6 +7,7 @@ mod test;
 
 use std::convert::TryInto;
 
+use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
 use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::*;
@@ -18,8 +19,8 @@ pub fn native(process: &Process, number: Term) -> exception::Result<Term> {
     if number.is_boxed_float() {
         Ok(number)
     } else {
-        let f: f64 = number.try_into()?;
+        let f: f64 = number.try_into().map_err(|_| badarg!(process))?;
 
-        process.float(f).map_err(|alloc| alloc.into())
+        process.float(f).map_err(|_| badarg!(process).into())
     }
 }

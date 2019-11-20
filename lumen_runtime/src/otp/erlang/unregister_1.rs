@@ -9,6 +9,7 @@ use std::convert::TryInto;
 
 use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
+use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::*;
 
 use lumen_runtime_macros::native_implemented_function;
@@ -16,12 +17,12 @@ use lumen_runtime_macros::native_implemented_function;
 use crate::registry;
 
 #[native_implemented_function(unregister/1)]
-pub fn native(name: Term) -> exception::Result<Term> {
-    let atom: Atom = name.try_into()?;
+pub fn native(process: &Process, name: Term) -> exception::Result<Term> {
+    let atom: Atom = name.try_into().map_err(|_| badarg!(process))?;
 
     if registry::unregister(&atom) {
         Ok(true.into())
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }

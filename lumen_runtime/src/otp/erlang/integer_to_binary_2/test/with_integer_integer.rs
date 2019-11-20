@@ -15,7 +15,10 @@ fn without_base_base_errors_badarg() {
                     strategy::term::is_not_base(arc_process.clone()),
                 ),
                 |(integer, base)| {
-                    prop_assert_eq!(native(&arc_process, integer, base), Err(badarg!().into()));
+                    prop_assert_eq!(
+                        native(&arc_process, integer, base),
+                        Err(badarg!(&arc_process).into())
+                    );
 
                     Ok(())
                 },
@@ -62,7 +65,8 @@ fn with_negative_integer_returns_binary_in_base_with_negative_sign_in_front_of_n
                     let positive_isize = -1 * negative_isize;
                     let positive_integer = arc_process.integer(positive_isize).unwrap();
                     let positive_binary = native(&arc_process, positive_integer, base).unwrap();
-                    let positive_string: String = binary_to_string(positive_binary).unwrap();
+                    let positive_string: String =
+                        binary_to_string(&arc_process, positive_binary).unwrap();
                     let expected_negative_string = format!("-{}", positive_string);
                     let expected_negative_binary = arc_process
                         .binary_from_str(&expected_negative_string)

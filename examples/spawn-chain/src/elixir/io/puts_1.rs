@@ -32,7 +32,7 @@ fn code(arc_process: &Arc<Process>) -> code::Result {
 
     let elixir_string = arc_process.stack_pop().unwrap();
 
-    match binary_to_string(elixir_string) {
+    match binary_to_string(arc_process, elixir_string) {
         Ok(string) => {
             // NOT A DEBUGGING LOG
             system::io::puts(&string);

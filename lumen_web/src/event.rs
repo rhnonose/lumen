@@ -7,12 +7,13 @@ use web_sys::Event;
 
 use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
+use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::*;
 
 // Private
 
-fn from_term(term: Term) -> Result<&'static Event, exception::Exception> {
-    let boxed: Boxed<Resource> = term.try_into()?;
+fn from_term(process: &Process, term: Term) -> Result<&'static Event, exception::Exception> {
+    let boxed: Boxed<Resource> = term.try_into().map_err(|_| badarg!(process))?;
     let event_reference: Resource = boxed.into();
 
     match event_reference.downcast_ref() {
@@ -21,7 +22,7 @@ fn from_term(term: Term) -> Result<&'static Event, exception::Exception> {
 
             Ok(static_event)
         }
-        None => Err(badarg!().into()),
+        None => Err(badarg!(process).into()),
     }
 }
 

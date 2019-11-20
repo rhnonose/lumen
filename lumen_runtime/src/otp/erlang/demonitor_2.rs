@@ -9,6 +9,7 @@ mod test;
 
 use std::convert::TryInto;
 
+use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
 use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::*;
@@ -21,8 +22,9 @@ use crate::registry::pid_to_process;
 
 #[native_implemented_function(demonitor/2)]
 pub fn native(process: &Process, reference: Term, options: Term) -> exception::Result<Term> {
-    let reference_reference: Boxed<Reference> = reference.try_into()?;
-    let options_options: Options = options.try_into()?;
+    let reference_reference: Boxed<Reference> =
+        reference.try_into().map_err(|_| badarg!(process))?;
+    let options_options: Options = options.try_into().map_err(|_| badarg!(process))?;
 
     demonitor(process, &reference_reference, options_options)
 }

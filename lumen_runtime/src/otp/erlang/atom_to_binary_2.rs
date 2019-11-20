@@ -19,11 +19,13 @@ use lumen_runtime_macros::native_implemented_function;
 pub fn native(process: &Process, atom: Term, encoding: Term) -> exception::Result<Term> {
     match atom.decode().unwrap() {
         TypedTerm::Atom(atom) => {
-            let _: Encoding = encoding.try_into()?;
-            let binary = process.binary_from_str(atom.name())?;
+            let _: Encoding = encoding.try_into().map_err(|_| badarg!(process))?;
+            let binary = process
+                .binary_from_str(atom.name())
+                .map_err(|_| badarg!(process))?;
 
             Ok(binary)
         }
-        _ => Err(badarg!().into()),
+        _ => Err(badarg!(process).into()),
     }
 }

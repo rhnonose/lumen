@@ -16,7 +16,7 @@ use lumen_runtime_macros::native_implemented_function;
 
 #[native_implemented_function(process_flag/2)]
 pub fn native(process: &Process, flag: Term, value: Term) -> exception::Result<Term> {
-    let flag_atom: Atom = flag.try_into()?;
+    let flag_atom: Atom = flag.try_into().map_err(|_| badarg!(process))?;
 
     match flag_atom.name() {
         "error_handler" => unimplemented!(),
@@ -28,10 +28,10 @@ pub fn native(process: &Process, flag: Term, value: Term) -> exception::Result<T
         "save_calls" => unimplemented!(),
         "sensitive" => unimplemented!(),
         "trap_exit" => {
-            let value_bool: bool = value.try_into()?;
+            let value_bool: bool = value.try_into().map_err(|_| badarg!(process))?;
 
             Ok(process.trap_exit(value_bool).into())
         }
-        _ => Err(badarg!().into()),
+        _ => Err(badarg!(process).into()),
     }
 }

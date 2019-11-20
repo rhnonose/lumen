@@ -3,8 +3,9 @@ use std::mem;
 
 use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception::Exception;
+use liblumen_alloc::erts::process::Process;
 
-pub fn decode(bytes: &[u8]) -> Result<(u8, &[u8]), Exception> {
+pub fn decode<'a>(process: &Process, bytes: &'a [u8]) -> Result<(u8, &'a [u8]), Exception> {
     if U8_BYTE_LEN <= bytes.len() {
         let (len_bytes, after_len_bytes) = bytes.split_at(U8_BYTE_LEN);
         let len_array = len_bytes.try_into().unwrap();
@@ -12,7 +13,7 @@ pub fn decode(bytes: &[u8]) -> Result<(u8, &[u8]), Exception> {
 
         Ok((len_u8, after_len_bytes))
     } else {
-        Err(badarg!().into())
+        Err(badarg!(process).into())
     }
 }
 

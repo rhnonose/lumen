@@ -5,7 +5,7 @@ use liblumen_alloc::erts::Process;
 use super::f64;
 
 pub fn decode<'a>(process: &Process, bytes: &'a [u8]) -> Result<(Term, &'a [u8]), Exception> {
-    let (f, after_f_bytes) = f64::decode(bytes)?;
+    let (f, after_f_bytes) = f64::decode(process, bytes)?;
     let float = process.float(f)?;
 
     Ok((float, after_f_bytes))

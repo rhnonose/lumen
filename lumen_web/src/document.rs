@@ -12,6 +12,7 @@ use web_sys::Document;
 
 use liblumen_alloc::badarg;
 use liblumen_alloc::erts::exception;
+use liblumen_alloc::erts::process::Process;
 use liblumen_alloc::erts::term::prelude::*;
 
 // Private
@@ -20,8 +21,11 @@ fn module() -> Atom {
     Atom::try_from_str("Elixir.Lumen.Web.Document").unwrap()
 }
 
-fn document_from_term(term: Term) -> Result<&'static Document, exception::Exception> {
-    let boxed: Boxed<Resource> = term.try_into()?;
+fn document_from_term(
+    process: &Process,
+    term: Term,
+) -> Result<&'static Document, exception::Exception> {
+    let boxed: Boxed<Resource> = term.try_into().map_err(|_| badarg!(process))?;
     let document_reference: Resource = boxed.into();
 
     match document_reference.downcast_ref() {
@@ -31,6 +35,6 @@ fn document_from_term(term: Term) -> Result<&'static Document, exception::Except
 
             Ok(static_document)
         }
-        None => Err(badarg!().into()),
+        None => Err(badarg!(process).into()),
     }
 }
